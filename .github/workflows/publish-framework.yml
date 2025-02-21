@@ -93,4 +93,5 @@ jobs:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
           pod lib lint ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings
+          pod spec lint ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings
           pod trunk push ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings --verbose
