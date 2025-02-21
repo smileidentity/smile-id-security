@@ -12,7 +12,13 @@ Pod::Spec.new do |s|
 
   # Extract the XCFramework after download
   s.prepare_command = <<-CMD
+    # Cleanup
+    rm -rf SmileIDSecurity.xcframework
+    rm -f SmileIDSecurity.xcframework.zip
     curl -L #{s.source[:http]} -o SmileIDSecurity.xcframework.zip
-    unzip SmileIDSecurity.xcframework.zip
+    # For some reason on OSX it seems we have to extract the zip twice since otherwise it doesn't unzip
+    unzip -o SmileIDSecurity.xcframework.zip
+    sleep 1
+    unzip -o SmileIDSecurity.xcframework.zip
   CMD
 end
