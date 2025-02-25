@@ -14,3 +14,7 @@ runs:
   - name: Install cocoapods
     run: sudo gem install cocoapods
     shell: bash
+
+  - name: Install unzip
+    run: brew install unzip
+    shell: bash
