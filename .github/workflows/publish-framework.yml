@@ -1,0 +1,102 @@
+name: Publish XCFramework to Cocoapods and SPM
+
+on:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish-spm:
+    name: "Publish Framework to SPM"
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env: 
+      FRAMEWORK_NAME: "SmileIDSecurity"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        with:
+          xcode: "15.2"
+
+      - name: Extract version from folder structure
+        id: extract_version
+        run: |
+          VERSION=$(ls Releases | sort -V | tail -n 1)  # Get latest version
+          echo "Extracted version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Compute checksum for xcframework
+        id: compute_checksum
+        run: |
+          CHECKSUM=$(swift package compute-checksum Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip)
+          echo "Computed checksum: $CHECKSUM"
+          echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
+
+      - name: Update Package.swift
+        run: |
+          URL="https://github.com/smileidentity/smile-id-security/Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip"
+          sed -i.bak -E "s#url: \".*\"#url: \"$URL\"#" Package.swift
+          sed -i.bak -E "s#checksum: \".*\"#checksum: \"$CHECKSUM\"#" Package.swift
+          rm Package.swift.bak
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "Smile Identity"
+          git config user.email "mobile@smileidentity.com"
+          git add Package.swift
+          git commit -m "Update Package.swift for version $VERSION"
+          git push origin main
+
+      - name: Create Git Tag
+        run: |
+          git tag v$VERSION
+          git push origin v$VERSION
+
+  publish-cocoapods:
+    name: "Publish Framework to Cocoapods"
+    needs: publish-spm
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      FRAMEWORK_NAME: "SmileIDSecurity"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        with:
+          xcode: "15.2"
+
+      - name: Extract version from folder structure
+        id: extract_version
+        run: |
+          VERSION=$(ls Releases | sort -V | tail -n 1)  # Get latest version
+          echo "Extracted version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Update podspec
+        run: |
+          sed -i.bak -E "s/s.version\s*=\s*'.*'/s.version = '$VERSION'/" ${{ env.FRAMEWORK_NAME }}.podspec
+          sed -i.bak -E "s#s.source\s*=\s*\{.*\}#s.source = { :http => 'https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip'}#" ${{ env.FRAMEWORK_NAME }}.podspec
+          rm ${{ env.FRAMEWORK_NAME }}.podspec.bak
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "Smile Identity"
+          git config user.email "mobile@smileidentity.com"
+          git add ${{ env.FRAMEWORK_NAME }}.podspec
+          git commit -m "Update podspec for version $VERSION"
+          git push origin main
+
+      - name: Publish to CocoaPods
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: |
+          pod lib lint ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings
+          pod spec lint ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings
+          pod trunk push ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings --verbose
