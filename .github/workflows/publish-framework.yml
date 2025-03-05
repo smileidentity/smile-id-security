@@ -43,17 +43,23 @@ jobs:
           sed -i.bak -E "s#checksum: \".*\"#checksum: \"$CHECKSUM\"#" Package.swift
           rm Package.swift.bak
 
+      - name: Authenticate with Smiles Github Action Bot
+        uses: actions/create-github-app-token@v1
+        id: smile-gha-bot-auth
+        with:
+          app-id: ${{ secrets.SMILE_GHA_BOT_APP_ID }}
+          private-key: ${{ secrets.SMILE_GHA_BOT_PRIVATE_KEY }}
+
       - name: Commit and push changes
-        env:
-          GHA_PAT: ${{ secrets.GHA_PAT }}
         run: |
           git config user.name "Smile Identity"
           git config user.email "mobile@smileidentity.com"
           git add Package.swift
           git commit -m "Update Package.swift for version $VERSION"
-          # we use a PAT (personal access token) with repo permissions in order to be able to push to the protected main branch.
-          git remote set-url origin https://x-access-token:${GHA_PAT}@github.com/${{ github.repository }}.git
+          git remote set-url origin https://x-access-token:${GHA_APP_TOKEN}@github.com/${{ github.repository }}.git
           git push origin main
+        env:
+          GHA_APP_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
 
       - name: Create Git Tag
         run: |
@@ -89,17 +95,23 @@ jobs:
           sed -i.bak -E "s#s.source\s*=\s*\{.*\}#s.source = { :http => 'https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip'}#" ${{ env.FRAMEWORK_NAME }}.podspec
           rm ${{ env.FRAMEWORK_NAME }}.podspec.bak
 
+      - name: Authenticate with Smiles Github Action Bot
+        uses: actions/create-github-app-token@v1
+        id: smile-gha-bot-auth
+        with:
+          app-id: ${{ secrets.SMILE_GHA_BOT_APP_ID }}
+          private-key: ${{ secrets.SMILE_GHA_BOT_PRIVATE_KEY }}
+
       - name: Commit and push changes
-        env:
-          GHA_PAT: ${{ secrets.GHA_PAT }}
         run: |
           git config user.name "Smile Identity"
           git config user.email "mobile@smileidentity.com"
           git add ${{ env.FRAMEWORK_NAME }}.podspec
           git commit -m "Update podspec for version $VERSION"
-          # we use a PAT (personal access token) with repo permissions in order to be able to push to the protected main branch.
-          git remote set-url origin https://x-access-token:${GHA_PAT}@github.com/${{ github.repository }}.git
+          git remote set-url origin https://x-access-token:${GHA_APP_TOKEN}@github.com/${{ github.repository }}.git
           git push origin main
+        env:
+          GHA_APP_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
 
       - name: Publish to CocoaPods
         env:
