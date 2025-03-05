@@ -56,8 +56,7 @@ jobs:
           git config user.email "mobile@smileidentity.com"
           git add Package.swift
           git commit -m "Update Package.swift for version $VERSION"
-          git remote set-url origin https://x-access-token:${GHA_APP_TOKEN}@github.com/${{ github.repository }}.git
-          git push origin main
+          git push https://x-access-token:${GHA_APP_TOKEN}@github.com/${{ github.repository }}.git main
         env:
           GHA_APP_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
 
