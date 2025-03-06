@@ -50,27 +50,6 @@ jobs:
           app-id: ${{ secrets.SMILE_GHA_BOT_APP_ID }}
           private-key: ${{ secrets.SMILE_GHA_BOT_PRIVATE_KEY }}
 
-      - name: Set up Git user
-        run: |
-          git config user.name "Smile Identity"
-          git config user.email "mobile@smileidentity.com"
-
-      - name: Create a new branch
-        run: |
-          git checkout -b release/xcframework-to-spm
-          git push origin release/xcframework-to-spm
-
-      - name: Commit and push changes
-        run: |
-          git add Package.swift
-          git commit -m "Update Package.swift for version $VERSION"
-          git push origin release/xcframework-to-spm
-
-      - name: Create Git Tag
-        run: |
-          git tag v$VERSION
-          git push origin v$VERSION
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         id: create_pr
@@ -91,6 +70,11 @@ jobs:
         run: gh pr merge --merge --delete-branch ${{ steps.create_pr.outputs.pull-request-number }}
         env:
           GH_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
+
+      - name: Create Git Tag
+        run: |
+          git tag v$VERSION
+          git push origin v$VERSION
 
   publish-cocoapods:
     name: "Publish Framework to Cocoapods"
