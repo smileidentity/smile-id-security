@@ -57,14 +57,14 @@ jobs:
 
       - name: Create a new branch
         run: |
-          git checkout -b release/xcframework-v$VERSION-to-spm
-          git push origin release/xcframework-v$VERSION-to-spm
+          git checkout -b release/xcframework-to-spm
+          git push origin release/xcframework-to-spm
 
       - name: Commit and push changes
         run: |
           git add Package.swift
           git commit -m "Update Package.swift for version $VERSION"
-          git push origin release/xcframework-v$VERSION-to-spm
+          git push origin release/xcframework-to-spm
 
       - name: Create Git Tag
         run: |
@@ -76,7 +76,7 @@ jobs:
         id: create_pr
         with:
           token: ${{ steps.smile-gha-bot-auth.outputs.token }}
-          branch: release/xcframework-v$VERSION-to-spm
+          branch: release/xcframework-to-spm
           base: fix/auth-on-push
           title: "Release XCFramework for version v$VERSION"
           body: "This PR updates the XCFramework for version v$VERSION and release it for the SPM."
