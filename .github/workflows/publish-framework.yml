@@ -77,10 +77,9 @@ jobs:
         with:
           token: ${{ steps.smile-gha-bot-auth.outputs.token }}
           branch: release/xcframework-v$VERSION-to-spm
-          base: main
+          base: ${GITHUB_HEAD_REF}
           title: "Release XCFramework for version v$VERSION"
           body: "This PR updates the XCFramework for version v$VERSION and release it for the SPM."
-          labels: "automerge"
           draft: false
 
       - name: Approve PR
