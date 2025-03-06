@@ -50,21 +50,48 @@ jobs:
           app-id: ${{ secrets.SMILE_GHA_BOT_APP_ID }}
           private-key: ${{ secrets.SMILE_GHA_BOT_PRIVATE_KEY }}
 
-      - name: Commit and push changes
+      - name: Set up Git user
         run: |
           git config user.name "Smile Identity"
           git config user.email "mobile@smileidentity.com"
+
+      - name: Create a new branch
+        run: |
+          git checkout -b release/xcframework-v$VERSION-to-spm
+          git push origin release/xcframework-v$VERSION-to-spm
+
+      - name: Commit and push changes
+        run: |
           git add Package.swift
           git commit -m "Update Package.swift for version $VERSION"
-          echo ${GITHUB_HEAD_REF}
-          git push https://x-access-token:${GHA_APP_TOKEN}@github.com/${{ github.repository }}.git ${GITHUB_HEAD_REF}
-        env:
-          GHA_APP_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
+          git push origin release/xcframework-v$VERSION-to-spm
 
       - name: Create Git Tag
         run: |
           git tag v$VERSION
           git push origin v$VERSION
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        id: create_pr
+        with:
+          token: ${{ steps.smile-gha-bot-auth.outputs.token }}
+          branch: release/xcframework-v$VERSION-to-spm
+          base: main
+          title: "Release XCFramework for version v$VERSION"
+          body: "This PR updates the XCFramework for version v$VERSION and release it for the SPM."
+          labels: "automerge"
+          draft: false
+
+      - name: Approve PR
+        run: gh pr review --approve ${{ steps.create_pr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
+
+      - name: Merge PR
+        run: gh pr merge --merge --delete-branch ${{ steps.create_pr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
 
   publish-cocoapods:
     name: "Publish Framework to Cocoapods"
