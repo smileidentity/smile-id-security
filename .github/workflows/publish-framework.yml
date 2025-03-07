@@ -56,7 +56,7 @@ jobs:
         with:
           token: ${{ steps.smile-gha-bot-auth.outputs.token }}
           branch: release/xcframework-to-spm
-          base: fix/auth-on-push
+          base: main
           title: "Release XCFramework to SPM"
           body: |
             This PR updates the XCFramework and releases it to SPM.
@@ -114,16 +114,28 @@ jobs:
           app-id: ${{ secrets.SMILE_GHA_BOT_APP_ID }}
           private-key: ${{ secrets.SMILE_GHA_BOT_PRIVATE_KEY }}
 
-      - name: Commit and push changes
-        run: |
-          git config user.name "Smile Identity"
-          git config user.email "mobile@smileidentity.com"
-          git add ${{ env.FRAMEWORK_NAME }}.podspec
-          git commit -m "Update podspec for version $VERSION"
-          git remote set-url origin https://x-access-token:${GHA_APP_TOKEN}@github.com/${{ github.repository }}.git
-          git push origin main
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        id: create_pr
+        with:
+          token: ${{ steps.smile-gha-bot-auth.outputs.token }}
+          branch: release/xcframework-to-cocoapods
+          base: main
+          title: "Release XCFramework to Cocoapods"
+          body: |
+            This PR updates the XCFramework and releases it to Cocoapods.
+          draft: false
+          author: Smile Github Action Bot <mobile@smileidentity.com>
+
+      - name: Approve PR
+        run: gh pr review --approve ${{ steps.create_pr.outputs.pull-request-number }}
         env:
-          GHA_APP_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Merge PR
+        run: gh pr merge --merge --delete-branch ${{ steps.create_pr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Publish to CocoaPods
         env:
