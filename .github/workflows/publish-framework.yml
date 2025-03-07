@@ -58,9 +58,10 @@ jobs:
           branch: release/xcframework-to-spm
           base: fix/auth-on-push
           title: "Release XCFramework for version v$VERSION"
-          body: "This PR updates the XCFramework for version v$VERSION and release it for the SPM."
+          body: |
+            This PR updates the XCFramework for version v$VERSION and release it for the SPM.
           draft: false
-          author: "Smile Github Action Bot" <mobile@smileidentity.com>
+          author: Smile Github Action Bot <mobile@smileidentity.com>
 
       - name: Approve PR
         run: gh pr review --approve ${{ steps.create_pr.outputs.pull-request-number }}
