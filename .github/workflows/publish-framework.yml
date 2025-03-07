@@ -65,13 +65,9 @@ jobs:
 
       - name: Approve PR
         run: gh pr review --approve ${{ steps.create_pr.outputs.pull-request-number }}
-        env:
-          GH_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
 
       - name: Merge PR
         run: gh pr merge --merge --delete-branch ${{ steps.create_pr.outputs.pull-request-number }}
-        env:
-          GH_TOKEN: ${{ steps.smile-gha-bot-auth.outputs.token }}
 
       - name: Create Git Tag
         run: |
