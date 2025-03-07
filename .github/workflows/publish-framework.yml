@@ -137,6 +137,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Pull latest changes
+        run: |
+          git checkout main
+          git pull origin main --rebase
+
       - name: Publish to CocoaPods
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
