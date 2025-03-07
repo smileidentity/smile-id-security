@@ -57,17 +57,21 @@ jobs:
           token: ${{ steps.smile-gha-bot-auth.outputs.token }}
           branch: release/xcframework-to-spm
           base: fix/auth-on-push
-          title: "Release XCFramework for version v$VERSION"
+          title: "Release XCFramework to SPM"
           body: |
-            This PR updates the XCFramework for version v$VERSION and release it for the SPM.
+            This PR updates the XCFramework and releases it to SPM.
           draft: false
           author: Smile Github Action Bot <mobile@smileidentity.com>
 
       - name: Approve PR
         run: gh pr review --approve ${{ steps.create_pr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Merge PR
         run: gh pr merge --merge --delete-branch ${{ steps.create_pr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Create Git Tag
         run: |
