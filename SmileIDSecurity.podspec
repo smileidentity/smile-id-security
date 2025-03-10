@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name                = 'SmileIDSecurity'
-  s.version             = '0.0.0'
+  s.version             = '0.0.9'
   s.summary             = 'Security package for SmileID SDK'
   s.description         = 'Contains a library which can be used to protect sensitive information.'
   s.homepage            = 'https://usesmileid.com/'
