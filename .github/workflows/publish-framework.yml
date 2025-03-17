@@ -38,7 +38,7 @@ jobs:
 
       - name: Update Package.swift
         run: |
-          URL="https://github.com/smileidentity/smile-id-security/Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip"
+          URL="https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip"
           sed -i.bak -E "s#url: \".*\"#url: \"$URL\"#" Package.swift
           sed -i.bak -E "s#checksum: \".*\"#checksum: \"$CHECKSUM\"#" Package.swift
           rm Package.swift.bak
