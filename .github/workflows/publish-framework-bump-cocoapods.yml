@@ -1,0 +1,56 @@
+name: Publish XCFramework to Cocoapods (Version Bump)
+
+on:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish-cocoapods:
+    name: "Prepare Podspec and Create PR"
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      FRAMEWORK_NAME: "SmileIDSecurity"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        with:
+          xcode: "15.2"
+
+      - name: Extract version from folder structure
+        id: extract_version
+        run: |
+          VERSION=$(ls Releases | sort -V | tail -n 1)  # Get latest version
+          echo "Extracted version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Update podspec
+        run: |
+          sed -i.bak "s/\(s\.version[[:space:]]*=[[:space:]]*\)'[0-9]*\.[0-9]*\.[0-9]*'/"'\1'\'"${VERSION}"\'"/" ${{ env.FRAMEWORK_NAME }}.podspec
+          sed -i.bak "s|https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/.*\.zip|https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip|" ${{ env.FRAMEWORK_NAME }}.podspec
+          rm ${{ env.FRAMEWORK_NAME }}.podspec.bak
+
+      - name: Authenticate with Smiles Github Action Bot
+        uses: actions/create-github-app-token@v1
+        id: smile-gha-bot-auth
+        with:
+          app-id: ${{ secrets.SMILE_GHA_BOT_APP_ID }}
+          private-key: ${{ secrets.SMILE_GHA_BOT_PRIVATE_KEY }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        id: create_pr
+        with:
+          token: ${{ steps.smile-gha-bot-auth.outputs.token }}
+          branch: release/xcframework-to-cocoapods
+          base: main
+          title: "Release XCFramework to Cocoapods"
+          body: |
+            This PR updates the XCFramework and releases it to Cocoapods.
+          draft: false
+          author: Smile Github Action Bot <mobile@smileidentity.com>

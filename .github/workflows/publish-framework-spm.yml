@@ -1,0 +1,69 @@
+name: Publish XCFramework to SPM
+
+on:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish-spm:
+    name: "Publish Framework to SPM"
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env: 
+      FRAMEWORK_NAME: "SmileIDSecurity"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        with:
+          xcode: "15.2"
+
+      - name: Extract version from folder structure
+        id: extract_version
+        run: |
+          VERSION=$(ls Releases | sort -V | tail -n 1)  # Get latest version
+          echo "Extracted version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Compute checksum for xcframework
+        id: compute_checksum
+        run: |
+          CHECKSUM=$(swift package compute-checksum Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip)
+          echo "Computed checksum: $CHECKSUM"
+          echo "CHECKSUM=$CHECKSUM" >> $GITHUB_ENV
+
+      - name: Update Package.swift
+        run: |
+          URL="https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/$VERSION/${{ env.FRAMEWORK_NAME }}.xcframework.zip"
+          sed -i.bak -E "s#url: \".*\"#url: \"$URL\"#" Package.swift
+          sed -i.bak -E "s#checksum: \".*\"#checksum: \"$CHECKSUM\"#" Package.swift
+          rm Package.swift.bak
+
+      - name: Authenticate with Smiles Github Action Bot
+        uses: actions/create-github-app-token@v1
+        id: smile-gha-bot-auth
+        with:
+          app-id: ${{ secrets.SMILE_GHA_BOT_APP_ID }}
+          private-key: ${{ secrets.SMILE_GHA_BOT_PRIVATE_KEY }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        id: create_pr
+        with:
+          token: ${{ steps.smile-gha-bot-auth.outputs.token }}
+          branch: release/xcframework-to-spm
+          base: main
+          title: "Release XCFramework to SPM"
+          body: |
+            This PR updates the XCFramework and releases it to SPM.
+          draft: false
+          author: Smile Github Action Bot <mobile@smileidentity.com>
+
+      - name: Create Git Tag
+        run: |
+          git tag v$VERSION
+          git push origin v$VERSION
