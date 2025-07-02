@@ -16,14 +16,20 @@ brew install unzip
 The following workflow are triggered by manual dispatch.
 
 ## 2. SPM Releases
-We use github actions to release the SmileIDSecurity library to SPM. SPM is self-hosted within this github repository and the job `publish-spm` in [.github/workflows/publish-framework.yml](https://github.com/smileidentity/smile-id-security/blob/main/.github/workflows/publish-framework.yml) updates the [Package.swift](https://github.com/smileidentity/smile-id-security/blob/main/Package.swift) url with the new release and computes the checksum using 
+We use github actions to release the SmileIDSecurity library to SPM. SPM is self-hosted within this github repository and the job `publish-spm` in [.github/workflows/publish-framework-spm.yml](https://github.com/smileidentity/smile-id-security/blob/main/.github/workflows/publish-framework-spm.yml) updates the [Package.swift](https://github.com/smileidentity/smile-id-security/blob/main/Package.swift) url with the new release and computes the checksum using. 
+
+This will create a PR that will need to be manually approved and merged in main so you can then trigger the cocoapods release.
 
 ```
 swift package compute-checksum
 ```
 
 ## 3. Cocoapods Release
-We use github actions to release the SmileIDSecurity library to Cocoapods. Cocapods hosts the library in their trunk repository and the job `publish-cocoapods` in [.github/workflows/publish-framework.yml](https://github.com/smileidentity/smile-id-security/blob/main/.github/workflows/publish-framework.yml) publish the library to cocoapods.
+We use github actions to release the SmileIDSecurity library to Cocoapods. Cocapods hosts the library in their trunk repository 
+
+[.github/workflows/publish-framework-bump-cocoapods.yml](https://github.com/smileidentity/smile-id-security/blob/main/.github/workflows/publish-framework-bump-cocoapods.yml) this will create a PR that you need to approve and merge manually
+
+[.github/workflows/publish-framework-cocoapods.yml](https://github.com/smileidentity/smile-id-security/blob/main/.github/workflows/publish-framework-cocoapods.yml) this action will release the sdk to cocoapods automatically. You need to bump the version first before running this.
 
 Cocoapods requires a setup to prove ownership of the library's author's associated email address. This setup must be done on your computer by executing the following commands:
 
