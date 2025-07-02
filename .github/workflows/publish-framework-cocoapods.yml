@@ -1,0 +1,36 @@
+name: Publish XCFramework to Cocoapods
+
+on:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish-cocoapods:
+    name: "Publish Framework to Cocoapods"
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      FRAMEWORK_NAME: "SmileIDSecurity"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        with:
+          xcode: "15.2"
+
+      - name: Pull latest changes
+        run: |
+          git checkout main
+          git pull origin main --rebase
+
+      - name: Publish to CocoaPods
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: |
+          pod lib lint ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings
+          pod spec lint ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings
+          pod trunk push ${{ env.FRAMEWORK_NAME }}.podspec --allow-warnings --verbose
