@@ -15,8 +15,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "SmileIDSecurity",
-            url: "https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/1.0.2/SmileIDSecurity.xcframework.zip",
-            checksum: "7bdddafea1eff55f1d26996eb73466a7696ff23b8b8371a16397f5216ec845b5"
+            url: "https://github.com/smileidentity/smile-id-security/raw/refs/heads/main/Releases/1.0.3/SmileIDSecurity.xcframework.zip",
+            checksum: "b07efcd0dbf38b71ad0bc962c6cd90f3702771d5c42aba0a40ba7c003d8b1b8a"
         )
     ]
 )
