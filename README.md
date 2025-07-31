@@ -1,6 +1,6 @@
 # Smile ID Secure iOS SDK Release Repository
 
-This repository contains the releases (xcframework) of the SmileIDSecurity framework that is used within SmileId's iOS sdk to protect sensitive information.
+This repository contains the releases (XCFramework) of the SmileIDSecurity framework that is used within SmileId's iOS sdk to protect sensitive information.
 
 ## 0. Requirements
 
