@@ -11,7 +11,7 @@ jobs:
     name: "Publish Framework to SPM"
     runs-on: macos-latest
     timeout-minutes: 15
-    env: 
+    env:
       FRAMEWORK_NAME: "SmileIDSecurity"
     steps:
       - name: Checkout
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup
         with:
-          xcode: "15.2"
+          xcode: "16.4"
 
       - name: Extract version from folder structure
         id: extract_version
