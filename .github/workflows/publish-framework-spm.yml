@@ -62,8 +62,3 @@ jobs:
             This PR updates the XCFramework and releases it to SPM.
           draft: false
           author: Smile Github Action Bot <mobile@smileidentity.com>
-
-      - name: Create Git Tag
-        run: |
-          git tag v$VERSION
-          git push origin v$VERSION
