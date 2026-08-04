@@ -4,10 +4,8 @@ updates:
   directory: /
   schedule:
     interval: monthly
-    day: monday
     time: "15:00"
   groups:
     github-actions:
       patterns:
       - '*'
-~              
